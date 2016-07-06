@@ -1,6 +1,6 @@
 REPOSITORY := erwinnttdata
 NAME := phpmyadmin
-VERSION ?= 4.6.2-fpm-build_007
+VERSION ?= 4.6.2-fpm-build_008
 
 build: _build ##@targets Builds the docker image.
 

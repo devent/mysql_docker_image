@@ -1,15 +1,6 @@
 FROM php:5.6-fpm
 MAINTAINER Erwin Mueller "erwin.mueller@deventm.de"
 
-# the phpMyAdmin version
-ENV PHPMYADMIN_VERSION 4.6.2
-
-# www user, should aready exist
-RUN set -x \
-    && if ! id www-data; then \ 
-    useradd -rU www-data; \
-    fi
-
 # deactivate recomended packages.
 RUN set -x \
     && echo 'APT::Install-Recommends 0;' >> /etc/apt/apt.conf.d/01norecommends \
@@ -20,7 +11,7 @@ RUN set -x \
     && if [ -n "${http_proxy}" ]; then echo Acquire::http::Proxy "$http_proxy"; >> /etc/apt/apt.conf.d/08proxy; fi \
     && if [ -n "${ftp_proxy}" ]; then echo Acquire::ftp::Proxy "$ftp_proxy"; >> /etc/apt/apt.conf.d/08proxy; fi
 
-# install tools and dependencies
+# php dependencies
 RUN set -x \
     && apt-get update \
     && apt-get install -y \
@@ -46,6 +37,13 @@ RUN { \
         echo 'opcache.fast_shutdown=1'; \
         echo 'opcache.enable_cli=1'; \
 } > /usr/local/etc/php/conf.d/opcache-recommended.ini
+
+# www user, should aready exist
+RUN set -x \
+    && if ! id www-data; then useradd -rU www-data; fi
+
+# the phpMyAdmin version
+ENV PHPMYADMIN_VERSION 4.6.2
 
 # download and install phpMyAdmin
 RUN set -x \
