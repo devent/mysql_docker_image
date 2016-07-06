@@ -2,7 +2,7 @@ VERSION := latest
 NAME := phpmyadmin
 CONF := .
 CONTAINER_USER ?= www-data
-DNS_SERVER ?= 172.17.0.3
+DNS_SERVER ?= 172.17.0.2
 
 define DOCKER_CMD :=
 docker run \
@@ -15,9 +15,9 @@ docker run \
 erwinnttdata/phpmyadmin:$(VERSION)
 endef
 
-include ../make_utils/Makefile.help
-include ../make_utils/Makefile.functions
-include ../make_utils/Makefile.container
+include ../docker_make_utils/Makefile.help
+include ../docker_make_utils/Makefile.functions
+include ../docker_make_utils/Makefile.container
 
 .PHONY +: run rerun rm clean test restart bash
 

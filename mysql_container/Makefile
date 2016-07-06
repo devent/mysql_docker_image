@@ -10,10 +10,9 @@ CONFIG := conf
 ROOT_PASSWORD ?= auHoh5fei4biSooyobae1ahp8Xi1iaGo
 # data container
 DATA_VOL_NAME := db1
-# data container directory
 DATA_MOUNT_PATH := var/lib/mysql
 DATA_IMAGE_NAME := erwinnttdata/mysql:$(VERSION)
-DATA_VOLUME_NAME := db_data
+DATA_CONTAINER_NAME := db_data
 # database local user
 CONTAINER_USER ?= mysql
 
@@ -21,19 +20,19 @@ define DOCKER_CMD :=
 docker run \
 --name $(NAME) \
 --dns=$(DNS_SERVER) \
---volumes-from $(DATA_VOLUME_NAME) \
+--volumes-from $(DATA_CONTAINER_NAME) \
 -v "`realpath my.cnf`:/etc/mysql/my.cnf.custom" \
 -v "`realpath $(CONFIG)`:/etc/mysql/conf.d" \
 -e MYSQL_ROOT_PASSWORD="$(ROOT_PASSWORD)" \
 -e MYSQL_USER_ID=`id -u $(CONTAINER_USER)` \
 -e MYSQL_GROUP_ID=`id -g $(CONTAINER_USER)` \
 -d \
-$(IMAGE_NAME)
+$(DATA_IMAGE_NAME)
 endef
 
-include ../make_utils/Makefile.help
-include ../make_utils/Makefile.functions
-include ../make_utils/Makefile.container
+include ../docker_make_utils/Makefile.help
+include ../docker_make_utils/Makefile.functions
+include ../docker_make_utils/Makefile.container
 
 .PHONY +: run rerun rm clean test restart dataContainer rm_dataContainer connect user drop dropdb dropuser
 
