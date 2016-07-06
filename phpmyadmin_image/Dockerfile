@@ -10,15 +10,20 @@ RUN set -x \
     useradd -rU www-data; \
     fi
 
+# deactivate recomended packages.
+RUN set -x \
+    && echo 'APT::Install-Recommends 0;' >> /etc/apt/apt.conf.d/01norecommends \
+    && echo 'APT::Install-Suggests 0;' >> /etc/apt/apt.conf.d/01norecommends
+
 # optional add proxy entries for apt
 RUN set -x \
-    && [ -n \"${http_proxy}\" ] && echo Acquire::http::Proxy \"$http_proxy\"; >> /etc/apt/apt.conf.d/08proxy && true \
-    && [ -n \"${ftp_proxy}\" ] && echo Acquire::ftp::Proxy \"$ftp_proxy\"; >> /etc/apt/apt.conf.d/08proxy && true
+    && if [ -n "${http_proxy}" ]; then echo Acquire::http::Proxy "$http_proxy"; >> /etc/apt/apt.conf.d/08proxy; fi \
+    && if [ -n "${ftp_proxy}" ]; then echo Acquire::ftp::Proxy "$ftp_proxy"; >> /etc/apt/apt.conf.d/08proxy; fi
 
 # install tools and dependencies
 RUN set -x \
     && apt-get update \
-    && apt-get install --no-install-recommends -y \
+    && apt-get install -y \
                         libbz2-dev \
                         zlib1g-dev \
     && apt-get clean \
@@ -54,24 +59,28 @@ RUN set -x \
     && cd /tmp \
     
     # download archive
-    && wget https://files.phpmyadmin.net/phpMyAdmin/$PHPMYADMIN_VERSION/phpMyAdmin-${PHPMYADMIN_VERSION}-all-languages.tar.xz \
-    && wget https://files.phpmyadmin.net/phpMyAdmin/$PHPMYADMIN_VERSION/phpMyAdmin-${PHPMYADMIN_VERSION}-all-languages.tar.xz.asc \
-    && wget https://files.phpmyadmin.net/phpmyadmin.keyring \
+    && PHPMY_TAR=phpMyAdmin-${PHPMYADMIN_VERSION}-all-languages.tar.xz \
+    && PHPMY_TAR_URL=https://files.phpmyadmin.net/phpMyAdmin/$PHPMYADMIN_VERSION/$PHPMY_TAR \
+    && PHPMY_TAR_ASC_URL=https://files.phpmyadmin.net/phpMyAdmin/$PHPMYADMIN_VERSION/$PHPMY_TAR.asc \
+    && wget -nv $PHPMY_TAR_URL \
+    && wget -nv $PHPMY_TAR_ASC_URL \
+    && wget -nv https://files.phpmyadmin.net/phpmyadmin.keyring \
     
     # verify download
     && gpg --import phpmyadmin.keyring \
     && gpg --keyserver hkp://pgp.mit.edu --recv-keys 8259BD92 \
-    && gpg --verify phpMyAdmin-${PHPMYADMIN_VERSION}-all-languages.tar.xz.asc \
+    && gpg --verify $PHPMY_TAR.asc \
     
     # extract archive
+    && PHPMY_DIR_NAME=phpMyAdmin-${PHPMYADMIN_VERSION}-all-languages \
     && mkdir -p /usr/src/ \
-    && tar xf phpMyAdmin-${PHPMYADMIN_VERSION}-all-languages.tar.xz -C /usr/src/ \
-    && chown root.root -R /usr/src/phpMyAdmin-${PHPMYADMIN_VERSION}-all-languages \
-    && ln -s /usr/src/phpMyAdmin-${PHPMYADMIN_VERSION}-all-languages /usr/src/phpMyAdmin \
+    && tar xf $PHPMY_TAR -C /usr/src/ \
+    && chown root.root -R /usr/src/$PHPMY_DIR_NAME \
+    && ln -s /usr/src/$PHPMY_DIR_NAME /usr/src/phpMyAdmin \
     
     # clean up
-    && rm phpMyAdmin-${PHPMYADMIN_VERSION}-all-languages.tar.xz \
-    && rm phpMyAdmin-${PHPMYADMIN_VERSION}-all-languages.tar.xz.asc \
+    && rm $PHPMY_TAR \
+    && rm $PHPMY_TAR.asc \
     && rm phpmyadmin.keyring \
     && apt-get remove --auto-remove -y wget xz-utils \
     && apt-get clean \
