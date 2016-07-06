@@ -43,7 +43,7 @@ RUN set -x \
     && if ! id www-data; then useradd -rU www-data; fi
 
 # the phpMyAdmin version
-ENV PHPMYADMIN_VERSION 4.6.2
+ENV PHPMYADMIN_VERSION 4.6.3
 
 # download and install phpMyAdmin
 RUN set -x \
